@@ -23,6 +23,14 @@ class CorrelationIdInterceptorTest extends Specification {
     String wsAddress = 'http://localhost:9001/test'
 
     def setupSpec() {
+        new ServerFactoryBean(
+            features: [
+                new CorrelationIdFeature(),
+                new LoggingFeature()
+            ],
+            serviceBean: new TestWebServiceSoapImpl(),
+            address: wsAddress
+        ).create()
         BasicConfigurator.configure();
         startServer()
         webService = createClient()
@@ -37,11 +45,11 @@ class CorrelationIdInterceptorTest extends Specification {
     }
 
     private TestWebServiceSoap createClient() {
-        ClientProxyFactoryBean clientProxyFactoryBean = new ClientProxyFactoryBean()
-        clientProxyFactoryBean.serviceClass = TestWebServiceSoap
-        clientProxyFactoryBean.address = wsAddress
-        clientProxyFactoryBean.features = [new LoggingFeature()]
-        return clientProxyFactoryBean.create(TestWebServiceSoap)
+        return new ClientProxyFactoryBean(
+            serviceClass: TestWebServiceSoap,
+            address: wsAddress,
+            features: [new LoggingFeature()]
+        ).create(TestWebServiceSoap)
     }
 
     def 'should add correlation id to log'() {
@@ -64,6 +72,41 @@ class CorrelationIdInterceptorTest extends Specification {
             String correlationId = '12345678'
             Client proxy = ClientProxy.getClient(webService)
             Map<String, List<String>> headers = ['X-CORRELATION-ID': [correlationId]]
+            proxy.requestContext.put(Message.PROTOCOL_HEADERS, headers)
+            proxy.requestContext.put(Message.PROTOCOL_HEADERS, headers)
+        when:
+            CorrelationIdResponse response = (CorrelationIdResponse) proxy.invoke('testRequest', testRequest).first()
+
+        then:
+            correlationId == response.correlationId
+    }
+
+    def 'should use custom correlation id name'() {
+        given:
+            CorrelationIdFeature correlationIdFeature = new CorrelationIdFeature(
+                httpHeaderCorrelationIdName: 'X-CUSTOM-CORRELATION-ID',
+                mdcCorrelationIdName: 'customCorrelationId'
+            )
+
+            new ServerFactoryBean(
+                features: [
+                    correlationIdFeature,
+                    new LoggingFeature()
+                ],
+                serviceBean: new CustomCorrelationIdTestWebServiceSoapImpl(),
+                address: 'http://localhost:9002/test'
+            ).create()
+
+            TestWebServiceSoap webService = new ClientProxyFactoryBean(
+                serviceClass: TestWebServiceSoap,
+                address: 'http://localhost:9002/test',
+                features: [new LoggingFeature()]
+            ).create(TestWebServiceSoap)
+
+            String correlationId = 'abc123'
+
+            Client proxy = ClientProxy.getClient(webService)
+            Map<String, List<String>> headers = ['X-CUSTOM-CORRELATION-ID': [correlationId]]
             proxy.requestContext.put(Message.PROTOCOL_HEADERS, headers)
         when:
             CorrelationIdResponse response = (CorrelationIdResponse) proxy.invoke('testRequest', testRequest).first()
