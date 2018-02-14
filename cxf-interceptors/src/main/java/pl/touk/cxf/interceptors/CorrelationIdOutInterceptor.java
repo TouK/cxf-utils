@@ -12,11 +12,11 @@ import static pl.touk.cxf.interceptors.CorrelationIdConstants.CORRELATION_ID;
 @Slf4j
 public class CorrelationIdOutInterceptor extends AbstractPhaseInterceptor<Message> {
     public CorrelationIdOutInterceptor() {
-        super(Phase.PRE_PROTOCOL);
+        super(Phase.SETUP_ENDING);
     }
 
     public void handleMessage(Message message) throws Fault {
-        log.debug("removing {}", CORRELATION_ID);
+        log.debug("removing {} {}", MDC.get(CORRELATION_ID), CORRELATION_ID);
         MDC.remove(CORRELATION_ID);
     }
 }
