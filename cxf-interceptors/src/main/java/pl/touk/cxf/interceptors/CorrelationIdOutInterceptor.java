@@ -7,16 +7,17 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.slf4j.MDC;
 
-import static pl.touk.cxf.interceptors.CorrelationIdConstants.CORRELATION_ID;
-
 @Slf4j
 public class CorrelationIdOutInterceptor extends AbstractPhaseInterceptor<Message> {
-    public CorrelationIdOutInterceptor() {
+    private final CorrelationContext context;
+
+    public CorrelationIdOutInterceptor(CorrelationContext context) {
         super(Phase.SETUP_ENDING);
+        this.context = context;
     }
 
     public void handleMessage(Message message) throws Fault {
-        log.debug("removing {} {}", MDC.get(CORRELATION_ID), CORRELATION_ID);
-        MDC.remove(CORRELATION_ID);
+        log.debug("removing {}", context.getMdcCorrelationIdName());
+        MDC.remove(context.getMdcCorrelationIdName());
     }
 }
