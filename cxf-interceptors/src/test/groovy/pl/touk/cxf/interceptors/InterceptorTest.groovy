@@ -55,7 +55,6 @@ class InterceptorTest extends Specification {
             ],
             serviceBean: new TestWebServiceSoapImpl(),
             address: defaultAddress,
-
         ).create()
     }
 

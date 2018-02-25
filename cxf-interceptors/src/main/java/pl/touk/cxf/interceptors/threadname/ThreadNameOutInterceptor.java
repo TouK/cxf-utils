@@ -7,17 +7,17 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 
 @Slf4j
-public class ThreadNameutInterceptor extends AbstractPhaseInterceptor<Message> {
+public class ThreadNameOutInterceptor extends AbstractPhaseInterceptor<Message> {
     private final ThreadNameContext context;
 
-    public ThreadNameutInterceptor(ThreadNameContext context) {
+    public ThreadNameOutInterceptor(ThreadNameContext context) {
         super(Phase.SETUP_ENDING);
         this.context = context;
     }
 
     public void handleMessage(Message message) throws Fault {
         String oldThreadName = (String) message.getExchange().get(context.getOldNameContextProperty());
-        log.debug("Setting old thread name {}", oldThreadName);
+        log.debug("Setting old thread name {} for thread {}", oldThreadName, Thread.currentThread().getName());
         Thread.currentThread().setName(oldThreadName);
     }
 }

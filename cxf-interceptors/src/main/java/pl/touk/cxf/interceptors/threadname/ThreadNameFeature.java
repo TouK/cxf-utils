@@ -11,12 +11,12 @@ public class ThreadNameFeature extends AbstractFeature {
     @Delegate
     private final ThreadNameContext context;
     private final ThreadNameInInterceptor in;
-    private final ThreadNameutInterceptor out;
+    private final ThreadNameOutInterceptor out;
 
     public ThreadNameFeature(ThreadNameContext context) {
         this.context = context;
         in = new ThreadNameInInterceptor(this.context);
-        out = new ThreadNameutInterceptor(this.context);
+        out = new ThreadNameOutInterceptor(this.context);
     }
 
     public ThreadNameFeature() {

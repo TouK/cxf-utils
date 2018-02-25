@@ -19,7 +19,7 @@ public class ThreadNameInInterceptor extends AbstractPhaseInterceptor<Message> {
     public void handleMessage(Message message) throws Fault {
         String oldThreadName = Thread.currentThread().getName();
         String newThreadName = context.getThreadNamePolicy().apply(oldThreadName);
-        log.debug("Setting new thread name {}", newThreadName);
+        log.debug("Setting new thread name {} for thread {}", newThreadName, oldThreadName);
         Thread.currentThread().setName(newThreadName);
         message.getExchange().put(context.getOldNameContextProperty(), oldThreadName);
     }

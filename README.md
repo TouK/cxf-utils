@@ -5,6 +5,7 @@
 Bundle provides services extending CXF features
 * `CorrelationIdFeature` - adds `correlationId` to all logs. Interceptors from this feature are executed in phases `RECEIVE` (adding `correlationId`) and `SETUP_ENDING` (deleting).
 * `LoggingFeature` - logs CXF requests and responses. Interceptors from this feature are executed in phase `PRE_STREAM`.
+* `ThreadNameFeature` - modify thread name according to `ThreadNamePolicy` - default policy adds prefix `cxf-`.
 
 ## Recommendations
 
@@ -30,6 +31,7 @@ Bundle provides services extending CXF features
             <jaxws:features>
                 <bean class="pl.touk.cxf.interceptors.CorrelationIdFeature" />
                 <bean class="pl.touk.cxf.interceptors.logging.LoggingFeature" />
+                <bean class="pl.touk.cxf.interceptors.threadname.ThreadNamePolicy" />
             </jaxws:features>
         </jaxws:endpoint>
 </blueprint>
