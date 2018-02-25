@@ -1,19 +1,22 @@
 package pl.touk.cxf.interceptors
 
 import org.apache.cxf.endpoint.Client
+import org.apache.cxf.endpoint.Server
 import org.apache.cxf.frontend.ClientProxy
 import org.apache.cxf.frontend.ClientProxyFactoryBean
 import org.apache.cxf.frontend.ServerFactoryBean
 import org.apache.cxf.message.Message
 import org.apache.log4j.BasicConfigurator
 import pl.touk.cxf.interceptors.logging.LoggingFeature
-import pl.touk.cxf_interceptors.CorrelationIdResponse
+import pl.touk.cxf.interceptors.threadname.ThreadNameFeature
 import pl.touk.cxf_interceptors.TestRequest
+import pl.touk.cxf_interceptors.TestResponse
 import pl.touk.cxf_interceptors.TestWebServiceSoap
+import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
-class CorrelationIdInterceptorTest extends Specification {
+class InterceptorTest extends Specification {
 
     @Shared
     TestRequest testRequest = new TestRequest(request: 'testRequest')
@@ -22,26 +25,27 @@ class CorrelationIdInterceptorTest extends Specification {
     @Shared
     String wsAddress = 'http://localhost:9001/test'
 
+    @Shared
+    @AutoCleanup(value = 'stop')
+    Server server
+
     def setupSpec() {
-        new ServerFactoryBean(
-            features: [
-                new CorrelationIdFeature(),
-                new LoggingFeature()
-            ],
-            serviceBean: new TestWebServiceSoapImpl(),
-            address: wsAddress
-        ).create()
         BasicConfigurator.configure();
-        startServer()
+        server = startDefaultServer()
         webService = createClient()
     }
 
-    private void startServer() {
-        ServerFactoryBean serverFactoryBean = new ServerFactoryBean()
-        serverFactoryBean.features = [new CorrelationIdFeature(), new LoggingFeature()]
-        serverFactoryBean.serviceBean = new TestWebServiceSoapImpl()
-        serverFactoryBean.address = wsAddress
-        serverFactoryBean.create()
+    private Server startDefaultServer() {
+        return new ServerFactoryBean(
+            features: [
+                new CorrelationIdFeature(),
+                new LoggingFeature(),
+                new ThreadNameFeature()
+            ],
+            serviceBean: new TestWebServiceSoapImpl(),
+            address: wsAddress,
+
+        ).create()
     }
 
     private TestWebServiceSoap createClient() {
@@ -54,15 +58,15 @@ class CorrelationIdInterceptorTest extends Specification {
 
     def 'should add correlation id to log'() {
         when:
-            CorrelationIdResponse response = webService.testRequest(testRequest)
+            TestResponse response = webService.test(testRequest)
         then:
             !response.correlationId.empty
     }
 
     def 'should add different correlation id for each ws request'() {
         when:
-            CorrelationIdResponse firstResponse = webService.testRequest(testRequest)
-            CorrelationIdResponse secondResponse = webService.testRequest(testRequest)
+            TestResponse firstResponse = webService.test(testRequest)
+            TestResponse secondResponse = webService.test(testRequest)
         then:
             firstResponse.correlationId != secondResponse.correlationId
     }
@@ -73,10 +77,8 @@ class CorrelationIdInterceptorTest extends Specification {
             Client proxy = ClientProxy.getClient(webService)
             Map<String, List<String>> headers = ['X-CORRELATION-ID': [correlationId]]
             proxy.requestContext.put(Message.PROTOCOL_HEADERS, headers)
-            proxy.requestContext.put(Message.PROTOCOL_HEADERS, headers)
         when:
-            CorrelationIdResponse response = (CorrelationIdResponse) proxy.invoke('testRequest', testRequest).first()
-
+            TestResponse response = (TestResponse) proxy.invoke('test', testRequest).first()
         then:
             correlationId == response.correlationId
     }
@@ -109,8 +111,15 @@ class CorrelationIdInterceptorTest extends Specification {
             Map<String, List<String>> headers = ['X-CUSTOM-CORRELATION-ID': [correlationId]]
             proxy.requestContext.put(Message.PROTOCOL_HEADERS, headers)
         when:
-            CorrelationIdResponse response = (CorrelationIdResponse) proxy.invoke('testRequest', testRequest).first()
+            TestResponse response = (TestResponse) proxy.invoke('test', testRequest).first()
         then:
             response.correlationId == correlationId
+    }
+
+    def 'should set new test name for request processing'() {
+        when:
+            TestResponse response = webService.test(testRequest)
+        then:
+            response.threadName.startsWith("cxf-qtp")
     }
 }

@@ -1,9 +1,9 @@
 package pl.touk.cxf.interceptors;
 
 import org.slf4j.MDC;
-import pl.touk.cxf_interceptors.CorrelationIdResponse;
 import pl.touk.cxf_interceptors.ObjectFactory;
 import pl.touk.cxf_interceptors.TestRequest;
+import pl.touk.cxf_interceptors.TestResponse;
 import pl.touk.cxf_interceptors.TestWebServiceSoap;
 
 import javax.jws.WebMethod;
@@ -22,10 +22,11 @@ public class TestWebServiceSoapImpl implements TestWebServiceSoap {
 
     @WebMethod(action = "http://cxf-interceptors.touk.pl/test")
     @WebResult(name = "testResponse", targetNamespace = "http://cxf-interceptors.touk.pl", partName = "testResponse")
-    public CorrelationIdResponse testRequest(
+    public TestResponse test(
             @WebParam(partName = "parameters", name = "testRequest", targetNamespace = "http://cxf-interceptors.touk.pl") TestRequest parameters) {
-        CorrelationIdResponse response = new CorrelationIdResponse();
+        TestResponse response = new TestResponse();
         response.setCorrelationId(MDC.get(CORRELATION_ID_KEY));
+        response.setThreadName(Thread.currentThread().getName());
         return response;
     }
 }

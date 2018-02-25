@@ -13,28 +13,29 @@
                     <s:attribute name="request" type="s:string"/>
                 </s:complexType>
             </s:element>
-            <s:element name="correlationIdResponse">
+            <s:element name="testResponse">
                 <s:complexType>
                     <s:attribute name="correlationId" type="s:string"/>
+                    <s:attribute name="threadName" type="s:string"/>
                 </s:complexType>
             </s:element>
         </s:schema>
     </wsdl:types>
-    <wsdl:message name="testRequestSoapIn">
+    <wsdl:message name="testSoapIn">
         <wsdl:part name="parameters" element="tns:testRequest"/>
     </wsdl:message>
-    <wsdl:message name="testRequestSoapOut">
-        <wsdl:part name="correlationIdResponse" element="tns:correlationIdResponse"/>
+    <wsdl:message name="testSoapOut">
+        <wsdl:part name="correlationIdResponse" element="tns:testResponse"/>
     </wsdl:message>
     <wsdl:portType name="testWebServiceSoap">
-        <wsdl:operation name="testRequest">
-            <wsdl:input message="tns:testRequestSoapIn"/>
-            <wsdl:output message="tns:testRequestSoapOut"/>
+        <wsdl:operation name="test">
+            <wsdl:input message="tns:testSoapIn"/>
+            <wsdl:output message="tns:testSoapOut"/>
         </wsdl:operation>
     </wsdl:portType>
     <wsdl:binding name="testWebServiceSoap" type="tns:testWebServiceSoap">
         <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
-        <wsdl:operation name="testRequest">
+        <wsdl:operation name="test">
             <soap:operation soapAction="http://cxf-interceptors.touk.pl/test" style="document"/>
             <wsdl:input>
                 <soap:body use="literal"/>
