@@ -25,6 +25,7 @@
         <nexus-staging-maven-plugin.version>1.6.6</nexus-staging-maven-plugin.version>
         <maven-bundle-plugin.version>3.2.0</maven-bundle-plugin.version>
         <build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
+        <gmavenplus-plugin.version>1.6</gmavenplus-plugin.version>
     </properties>
 
     <dependencies>
@@ -127,6 +128,19 @@
                                 <source>${generated-java-sources}</source>
                             </sources>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>${gmavenplus-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>addTestSources</goal>
+                            <goal>compileTests</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
