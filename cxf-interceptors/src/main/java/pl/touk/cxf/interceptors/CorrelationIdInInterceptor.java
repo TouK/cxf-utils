@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
-import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.slf4j.MDC;
 import pl.touk.cxf.interceptors.correlation.Correlation;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-public class CorrelationIdInInterceptor extends AbstractPhaseInterceptor<Message> {
+public class CorrelationIdInInterceptor extends NonWsdlAbstractPhaseInterceptor {
     private final CorrelationContext context;
 
     public CorrelationIdInInterceptor(CorrelationContext context) {
@@ -21,7 +20,8 @@ public class CorrelationIdInInterceptor extends AbstractPhaseInterceptor<Message
         this.context = context;
     }
 
-    public void handleMessage(Message message) throws Fault {
+    @Override
+    public void processMessage(Message message) throws Fault {
         String correlationIdFromMdc = MDC.get(context.getMdcCorrelationIdName());
         String correlationIdFromHeaders = getCorrelationIdFromHeaders(message);
         if (correlationIdFromHeaders == null && correlationIdFromMdc == null) {
