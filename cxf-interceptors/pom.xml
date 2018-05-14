@@ -27,6 +27,7 @@
         <gmavenplus-plugin.version>1.6</gmavenplus-plugin.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <spock-global-unroll.version>0.5.1</spock-global-unroll.version>
     </properties>
 
     <dependencies>
@@ -70,6 +71,12 @@
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
             <version>${spock-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>info.solidsoft.spock</groupId>
+            <artifactId>spock-global-unroll</artifactId>
+            <version>${spock-global-unroll.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
