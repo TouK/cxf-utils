@@ -7,7 +7,8 @@ import org.apache.cxf.common.injection.NoJSR250Annotations;
 import org.apache.cxf.feature.AbstractFeature;
 import org.apache.cxf.interceptor.AbstractLoggingInterceptor;
 import org.apache.cxf.interceptor.InterceptorProvider;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
+
+import java.util.logging.Logger;
 
 /**
  * Class is based on {@link org.apache.cxf.feature.LoggingFeature}
@@ -17,42 +18,30 @@ import org.apache.cxf.interceptor.LoggingOutInterceptor;
 @Provider(value = Provider.Type.Feature)
 public class LoggingFeature extends AbstractFeature {
     private static final int DEFAULT_LIMIT = AbstractLoggingInterceptor.DEFAULT_LIMIT;
-    private final LoggingInInterceptor IN = new LoggingInInterceptor(-1);
-    private final LoggingOutInterceptor OUT = new LoggingOutInterceptor(-1);
+    private final LoggingInInterceptor IN;
+    private final LoggingOutInterceptor OUT;
 
     private String inLocation;
     private String outLocation;
     private boolean prettyLogging;
     private boolean showBinary;
+    private final Logger logger;
 
     private int limit = DEFAULT_LIMIT;
 
     public LoggingFeature() {
-
-    }
-    public LoggingFeature(int lim) {
-        limit = lim;
-    }
-    public LoggingFeature(String in, String out) {
-        inLocation = in;
-        outLocation = out;
-    }
-    public LoggingFeature(String in, String out, int lim) {
-        inLocation = in;
-        outLocation = out;
-        limit = lim;
+        this((String) null);
     }
 
-    public LoggingFeature(String in, String out, int lim, boolean p) {
-        inLocation = in;
-        outLocation = out;
-        limit = lim;
-        prettyLogging = p;
+    public LoggingFeature(String loggerName) {
+        this(loggerName, -1);
     }
 
-    public LoggingFeature(String in, String out, int lim, boolean p, boolean showBinary) {
-        this(in, out, lim, p);
-        this.showBinary = showBinary;
+    public LoggingFeature(String loggerName, int lim) {
+        this.logger = Logger.getLogger(loggerName);
+        limit = lim;
+        this.IN = new LoggingInInterceptor(lim, logger);
+        this.OUT = new LoggingOutInterceptor(lim, logger);
     }
 
     public LoggingFeature(Logging annotation) {
@@ -61,6 +50,9 @@ public class LoggingFeature extends AbstractFeature {
         limit = annotation.limit();
         prettyLogging = annotation.pretty();
         showBinary = annotation.showBinary();
+        this.logger = null;
+        this.IN = new LoggingInInterceptor(-1);
+        this.OUT = new LoggingOutInterceptor(-1, null);
     }
 
     @Override
@@ -72,11 +64,11 @@ public class LoggingFeature extends AbstractFeature {
             provider.getOutInterceptors().add(OUT);
             provider.getOutFaultInterceptors().add(OUT);
         } else {
-            LoggingInInterceptor in = new LoggingInInterceptor(limit);
+            LoggingInInterceptor in = new LoggingInInterceptor(limit, logger);
             in.setOutputLocation(inLocation);
             in.setPrettyLogging(prettyLogging);
             in.setShowBinaryContent(showBinary);
-            LoggingOutInterceptor out = new LoggingOutInterceptor(limit);
+            LoggingOutInterceptor out = new LoggingOutInterceptor(limit, logger);
             out.setOutputLocation(outLocation);
             out.setPrettyLogging(prettyLogging);
             out.setShowBinaryContent(showBinary);
@@ -114,4 +106,3 @@ public class LoggingFeature extends AbstractFeature {
         this.prettyLogging = prettyLogging;
     }
 }
-

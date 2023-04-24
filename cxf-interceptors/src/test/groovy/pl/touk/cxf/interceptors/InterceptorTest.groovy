@@ -17,7 +17,10 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.util.logging.Logger
+
 class InterceptorTest extends Specification {
+    private static final Logger logger = Logger.getLogger('test.logger')
 
     @Shared
     TestRequest testRequest = new TestRequest(request: 'testRequest')
@@ -50,7 +53,7 @@ class InterceptorTest extends Specification {
         return new ServerFactoryBean(
             features: [
                 new CorrelationIdFeature(),
-                new LoggingFeature(),
+                new LoggingFeature(logger),
                 new ThreadNameFeature()
             ],
             serviceBean: new TestWebServiceSoapImpl(),
@@ -75,7 +78,7 @@ class InterceptorTest extends Specification {
         new ServerFactoryBean(
             features: [
                 correlationIdFeature,
-                new LoggingFeature(),
+                new LoggingFeature(logger),
                 threadNameFeature
             ],
             serviceBean: new CustomCorrelationIdTestWebServiceSoapImpl(),
