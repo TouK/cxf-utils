@@ -20,7 +20,7 @@ import spock.lang.Specification
 import java.util.logging.Logger
 
 class InterceptorTest extends Specification {
-    private static final Logger logger = Logger.getLogger('test.logger')
+    private static final String logger = 'test.logger'
 
     @Shared
     TestRequest testRequest = new TestRequest(request: 'testRequest')

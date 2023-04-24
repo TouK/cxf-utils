@@ -8,6 +8,7 @@ import org.apache.cxf.feature.AbstractFeature;
 import org.apache.cxf.interceptor.AbstractLoggingInterceptor;
 import org.apache.cxf.interceptor.InterceptorProvider;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -38,7 +39,7 @@ public class LoggingFeature extends AbstractFeature {
     }
 
     public LoggingFeature(String loggerName, int lim) {
-        this.logger = Logger.getLogger(loggerName);
+        this.logger = Optional.ofNullable(loggerName).map(Logger::getLogger).orElse(null);
         limit = lim;
         this.IN = new LoggingInInterceptor(lim, logger);
         this.OUT = new LoggingOutInterceptor(lim, logger);
