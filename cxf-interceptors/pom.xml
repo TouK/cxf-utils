@@ -6,7 +6,7 @@
     <artifactId>cxf-interceptors</artifactId>
     <name>TouK - CXF interceptors</name>
     <description>Utility CXF interceptors</description>
-    <version>1.2.0</version>
+    <version>1.2.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <url>https://github.com/TouK/cxf-utils.git</url>
 
@@ -237,7 +237,7 @@
         <url>https://github.com/TouK/cxf-utils.git</url>
         <connection>scm:git:git://github.com/TouK/cxf-utils.git</connection>
         <developerConnection>scm:git:git://github.com/TouK/cxf-utils.git</developerConnection>
-        <tag>cxf-interceptors-1.2.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
