@@ -30,7 +30,9 @@ Bundle provides services extending CXF features
                         wsdlLocation="test.wsdl" xmlns:s="http://test.touk.pl">
             <jaxws:features>
                 <bean class="pl.touk.cxf.interceptors.CorrelationIdFeature" />
-                <bean class="pl.touk.cxf.interceptors.logging.LoggingFeature" />
+                <bean class="pl.touk.cxf.interceptors.logging.LoggingFeature">
+                    <argument value="custom.logger.name" />
+                </bean>
                 <bean class="pl.touk.cxf.interceptors.threadname.ThreadNameFeature" />
             </jaxws:features>
         </jaxws:endpoint>
