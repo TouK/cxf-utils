@@ -22,8 +22,12 @@ public class CorrelationIdInInterceptor extends NonWsdlAbstractPhaseInterceptor 
 
     @Override
     public void processMessage(Message message) throws Fault {
-        String correlationIdFromMdc = MDC.get(context.getMdcCorrelationIdName());
         String correlationIdFromHeaders = getCorrelationIdFromHeaders(message);
+        if (context.getCorrelationIdProvider() != null) {
+            context.getCorrelationIdProvider().start(correlationIdFromHeaders);
+            return;
+        }
+        String correlationIdFromMdc = MDC.get(context.getMdcCorrelationIdName());
         if (correlationIdFromHeaders == null && correlationIdFromMdc == null) {
             addNewCorrelationId();
         } else if (correlationIdFromHeaders != null && correlationIdFromMdc != null) {

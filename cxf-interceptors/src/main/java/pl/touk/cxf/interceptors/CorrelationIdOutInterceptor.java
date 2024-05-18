@@ -17,6 +17,10 @@ public class CorrelationIdOutInterceptor extends NonWsdlAbstractPhaseInterceptor
 
     @Override
     public void processMessage(Message message) throws Fault {
+        if (context.getCorrelationIdProvider() != null) {
+            context.getCorrelationIdProvider().finish();
+            return;
+        }
         log.debug("removing {}", context.getMdcCorrelationIdName());
         MDC.remove(context.getMdcCorrelationIdName());
     }

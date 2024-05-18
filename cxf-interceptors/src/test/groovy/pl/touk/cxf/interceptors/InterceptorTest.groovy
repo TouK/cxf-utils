@@ -17,8 +17,6 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.util.logging.Logger
-
 class InterceptorTest extends Specification {
     private static final String logger = 'test.logger'
 
@@ -29,9 +27,16 @@ class InterceptorTest extends Specification {
     @Shared
     TestWebServiceSoap customClient
     @Shared
+    TestWebServiceSoap externalCorrelationClient
+    @Shared
     String defaultAddress = 'http://localhost:9001/test'
     @Shared
     String customAddress = 'http://localhost:9002/test'
+    @Shared
+    String externalCorrelationAddress = 'http://localhost:9003/test'
+
+    @Shared
+    TestExternalCorrelationIdProvider correlationIdProvider = new TestExternalCorrelationIdProvider()
 
     @Shared
     @AutoCleanup(value = 'stop')
@@ -41,12 +46,18 @@ class InterceptorTest extends Specification {
     @AutoCleanup(value = 'stop')
     Server customServer
 
+    @Shared
+    @AutoCleanup(value = 'stop')
+    Server externalCorrelationServer
+
     def setupSpec() {
         BasicConfigurator.configure();
         defaultServer = startDefaultServer()
         defaultClient = createClient(defaultAddress)
         customServer = startCustomServer()
         customClient = createClient(customAddress)
+        externalCorrelationServer = startExternalCorrelationServer()
+        externalCorrelationClient = createClient(externalCorrelationAddress)
     }
 
     private Server startDefaultServer() {
@@ -75,7 +86,7 @@ class InterceptorTest extends Specification {
                 }
             }
         )
-        new ServerFactoryBean(
+        return new ServerFactoryBean(
             features: [
                 correlationIdFeature,
                 new LoggingFeature(logger),
@@ -83,6 +94,19 @@ class InterceptorTest extends Specification {
             ],
             serviceBean: new CustomCorrelationIdTestWebServiceSoapImpl(),
             address: customAddress
+        ).create()
+    }
+
+    private Server startExternalCorrelationServer() {
+        CorrelationIdFeature correlationIdFeature = new CorrelationIdFeature(
+            correlationIdProvider: correlationIdProvider
+        )
+        return new ServerFactoryBean(
+            features: [
+                correlationIdFeature
+            ],
+            serviceBean: new ExternalCorrelationIdTestWebServiceSoapImpl(),
+            address: externalCorrelationAddress
         ).create()
     }
 
@@ -131,6 +155,26 @@ class InterceptorTest extends Specification {
             TestResponse response = (TestResponse) proxy.invoke('test', testRequest).first()
         then:
             response.correlationId == correlationId
+    }
+
+    def 'should use external correlation without given correlation id'() {
+        given:
+            correlationIdProvider.currentCorrelationId = 'qwe'
+        when:
+            TestResponse response = externalCorrelationClient.test(testRequest)
+        then:
+            response.correlationId == 'qwe'
+    }
+
+    def 'should use external correlation with given correlation id'() {
+        given:
+            Client proxy = ClientProxy.getClient(externalCorrelationClient)
+            Map<String, List<String>> headers = ['X-CORRELATION-ID': ['xyz']]
+            proxy.requestContext.put(Message.PROTOCOL_HEADERS, headers)
+        when:
+            TestResponse response = (TestResponse) proxy.invoke('test', testRequest).first()
+        then:
+            response.correlationId == 'xyz'
     }
 
     def 'should set thread name prefix for request processing'() {
